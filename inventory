@@ -5,3 +5,4 @@ localhost ansible_connection=local
 [servers:vars]
 mariadb_zabbix_password=Qwerty123!
 zabbix_database_password=zabbix
+ansible_user_become=user_distant
