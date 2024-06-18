@@ -4,7 +4,7 @@
   hosts: servers
   become: yes
   vars:
-  # creation of mysql root password and zabbix database password
+  # creation of mysql root password and zabbix database password (Le mieux c'est de le mettre dans un fichier vault pour crypter le mdp)
     mariadb_zabbix_password: Qwerty123!
     zabbix_database_password: Qwerty123!
   tasks:
@@ -22,7 +22,7 @@
   - name: apt update
     apt: update_cache=yes
 
-  # install zabbix server
+  # install zabbix server (ça ne passera que si vous avez de l'ubuntu 24.04)
   - name: install zabbix-server-mysql
     apt: name=zabbix-server-mysql state=present
 
@@ -71,11 +71,11 @@
 
   # create zabbix database
   - name: create zabbix database
-    shell: 'mysql -e "create database zabbix0 character set utf8mb4 collate utf8mb4_bin;"'
+    shell: 'mysql -e "create database zabbix character set utf8mb4 collate utf8mb4_bin;"'
 
   # create zabbix database user
   - name: create zabbix user
-    shell: 'mysql -e "grant all privileges on zabbix.* to zabbix@localhost identified by ''{{ zabbix_database_password }}'';"'
+    shell: 'mysql -e "grant all privileges on * . * to zabbix@localhost identified by ''{{ zabbix_database_password }}'';"'
 
   # set global log_bin_trust_function_creators = 1
   - name: set global log_bin_trust_function_creators
@@ -83,7 +83,7 @@
 
   # import initial schema
   - name: import initial schema
-    shell: 'zcat /usr/share/zabbix-sql-scripts/mysql/server.sql.gz | mysql --default-character-set=utf8mb4 zabbix0 -uzabbix -p''{{ zabbix_database_password }}'''
+    shell: 'zcat /usr/share/zabbix-sql-scripts/mysql/server.sql.gz | mysql --default-character-set=utf8mb4 zabbix -uzabbix -p''{{ zabbix_database_password }}'''
 
   # return global log_bin_trust_function_creators = 0
   - name: set global log_bin_trust_function_creators = 0
@@ -103,7 +103,7 @@
     lineinfile:
       path: /etc/zabbix/apache.conf
       regexp: '^php_value date.timezone'
-      line: 'php_value date.timezone America/El_Salvador'
+      line: 'php_value date.timezone Europe/Paris'
       state: present
       backup: yes
 
@@ -127,3 +127,5 @@
       name: apache2
       state: restarted
       enabled: yes
+
+  # Une fois que c'est lancé, les crédentials de zabbix sont : Admin/zabbix
